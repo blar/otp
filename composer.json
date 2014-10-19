@@ -1,0 +1,36 @@
+{
+    "name": "blar/otp",
+    "description": "OTP for PHP",
+    "type": "library",
+    "keywords": ["php", "otp"],
+    "homepage": "https://github.com/blar/otp/",
+    "license": "LGPL-3.0+",
+    "authors": [
+        {
+            "name": "Andreas Treichel",
+            "email": "gmblar+github@gmail.com"
+        }
+    ],
+    "minimum-stability": "dev",
+    "require": {
+        "php": ">=5.5.0",
+        "christian-riesen/base32": "dev-master"
+    },
+    "require-dev": {
+        "satooshi/php-coveralls": "dev-master",
+        "blar/google-charts": "dev-master"
+    },
+    "suggest": {
+        "blar/google-charts": "Display otpauth-URL as QR-Code"
+    },
+    "support": {
+        "source": "https://github.com/blar/otp/",
+        "issues": "https://github.com/blar/otp/issues",
+        "wiki": "https://github.com/blar/otp/wiki"
+    },
+    "autoload": {
+        "psr-4": {
+            "Blar\\Otp\\": "lib/Blar/Otp/"
+        }
+    }
+}
