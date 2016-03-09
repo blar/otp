@@ -11,13 +11,13 @@
             "email": "gmblar+github@gmail.com"
         }
     ],
-    "minimum-stability": "dev",
     "require": {
-        "php": ">=5.5.0",
+        "php": "^7.0",
+        "blar/hash": "dev-master",
         "christian-riesen/base32": "dev-master"
     },
     "require-dev": {
-        "satooshi/php-coveralls": "dev-master",
+        "satooshi/php-coveralls": "^1.0",
         "blar/google-charts": "dev-master"
     },
     "suggest": {

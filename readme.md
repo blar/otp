@@ -1,7 +1,9 @@
-[![Build Status](https://travis-ci.org/blar/otp.png?branch=master)](https://travis-ci.org/blar/otp)
-[![Coverage Status](https://coveralls.io/repos/blar/otp/badge.png?branch=master)](https://coveralls.io/r/blar/otp?branch=master)
+[![License](https://poser.pugx.org/blar/otp/license)](https://packagist.org/packages/blar/otp)
+[![Latest Stable Version](https://poser.pugx.org/blar/otp/v/stable)](https://packagist.org/packages/blar/otp)
+[![Build Status](https://travis-ci.org/blar/otp.svg?branch=master)](https://travis-ci.org/blar/otp)
+[![Coverage Status](https://coveralls.io/repos/blar/otp/badge.svg?branch=master)](https://coveralls.io/r/blar/otp?branch=master)
 [![Dependency Status](https://gemnasium.com/blar/otp.svg)](https://gemnasium.com/blar/otp)
-[![Dependencies Status](https://depending.in/blar/otp.png)](http://depending.in/blar/otp)
+[![Flattr](https://button.flattr.com/flattr-badge-large.png)](https://flattr.com/submit/auto?user_id=Blar&url=https%3A%2F%2Fgithub.com%2Fblar%2Fotp)
 
 # One Time Password (OTP)
 

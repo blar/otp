@@ -18,17 +18,17 @@ use DateInterval;
 class Totp extends Hotp {
 
     /**
-     * @var \DateTime
+     * @var DateTime
      */
-    protected $dateTime;
+    private $dateTime;
 
     /**
-     * @var \DateInterval
+     * @var DateInterval
      */
-    protected $interval = 30;
+    private $interval = 30;
 
     /**
-     * @return DateTime
+     * @return DateTimeInterface
      */
     public function getDateTime() {
         if(is_null($this->dateTime)) {
@@ -38,7 +38,7 @@ class Totp extends Hotp {
     }
 
     /**
-     * @param DateTime $dateTime
+     * @param DateTimeInterface $dateTime
      * @return $this
      */
     public function setDateTime(DateTimeInterface $dateTime) {
@@ -73,7 +73,7 @@ class Totp extends Hotp {
      * @param string $otp
      * @return bool
      */
-    public function validate($otp, $dateTime = NULL) {
+    public function validate($otp) {
         $result = parent::validate($otp);
         return $result;
     }

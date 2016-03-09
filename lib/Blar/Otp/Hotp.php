@@ -16,7 +16,7 @@ class Hotp extends Otp {
     /**
      * @var int
      */
-    protected $counter = 0;
+    private $counter = 0;
 
     /**
      * @return int

@@ -1,0 +1,25 @@
+language: php
+
+php:
+  - 7.0
+  - hhvm
+
+cache:
+    apt: true
+    directories:
+      - $HOME/.composer/cache
+
+before_script:
+  - composer install
+
+after_success:
+  - php vendor/bin/coveralls -v
+
+matrix:
+  allow_failures:
+    - php: hhvm
+
+notifications:
+  irc:
+    channels:
+      - "irc.quakenet.org#blar-dev"

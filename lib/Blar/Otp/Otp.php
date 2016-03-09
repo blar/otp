@@ -7,6 +7,8 @@
 namespace Blar\Otp;
 
 use Base32\Base32;
+use Blar\Hash\HmacHash;
+use Blar\Hash\HmacHashGenerator;
 
 /**
  * Class Otp
@@ -18,63 +20,27 @@ abstract class Otp {
     /**
      * @var string
      */
-    protected $secret;
+    private $secret;
 
     /**
      * @var string
      */
-    protected $label;
+    private $label;
 
     /**
      * @var string
      */
-    protected $issuer;
+    private $issuer;
 
     /**
      * @var int
      */
-    protected $digits = 6;
+    private $digits = 6;
 
     /**
      * @var string
      */
-    protected $algorithm = 'SHA1';
-
-    public static function createSecret($prefix = NULL) {
-        return sha1(uniqid($prefix, TRUE), TRUE);
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getSecret() {
-        return $this->secret;
-    }
-
-    /**
-     * @param mixed $secret
-     * @return $this
-     */
-    public function setSecret($secret) {
-        $this->secret = $secret;
-        return $this;
-    }
-
-    /**
-     * @return string
-     */
-    public function getLabel() {
-        return $this->label;
-    }
-
-    /**
-     * @param string $label
-     * @return $this
-     */
-    public function setLabel($label) {
-        $this->label = $label;
-        return $this;
-    }
+    private $algorithm = 'SHA1';
 
     /**
      * @return string
@@ -85,11 +51,113 @@ abstract class Otp {
 
     /**
      * @param string $issuer
+     *
      * @return $this
      */
     public function setIssuer($issuer) {
         $this->issuer = $issuer;
         return $this;
+    }
+
+    /**
+     * @param string $otp
+     *
+     * @return bool
+     */
+    public function validate($otp) {
+        return $this->generate() == $otp;
+    }
+
+    /**
+     * @return string
+     */
+    public function generate() {
+        $hash = $this->generateHash($this->getFormattedCounter());
+        $otp = $this->truncateHash($hash);
+        return $this->format($otp);
+    }
+
+    /**
+     * @param $counter
+     *
+     * @return string
+     */
+    protected function generateHash($counter) {
+        $generator = new HmacHashGenerator($this->getAlgorithm(), $this->getSecret());
+        $hash = $generator->hash($counter);
+        return $hash->getValue();
+    }
+
+    /**
+     * @return string
+     */
+    public function getAlgorithm() {
+        return $this->algorithm;
+    }
+
+    /**
+     * @param string $algorithm
+     *
+     * @return $this
+     */
+    public function setAlgorithm($algorithm) {
+        $this->algorithm = $algorithm;
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getSecret() {
+        if(is_null($this->secret)) {
+            $this->secret = static::createSecret();
+        }
+        return $this->secret;
+    }
+
+    /**
+     * @param string $secret
+     *
+     * @return $this
+     */
+    public function setSecret($secret) {
+        $this->secret = $secret;
+        return $this;
+    }
+
+    /**
+     * @param string $prefix
+     *
+     * @return string
+     */
+    public static function createSecret($prefix = NULL) {
+        return sha1(uniqid($prefix, TRUE), TRUE);
+    }
+
+    /**
+     * @param string $hash
+     *
+     * @return int
+     */
+    public function truncateHash($hash) {
+        $offset = ord(substr($hash, -1)) & 0xF;
+        $part = substr($hash, $offset, 4);
+        $values = unpack('N', $part);
+        $value = array_shift($values);
+        // Only 32 bits
+        return $value & 0x7FFFFFFF;
+    }
+
+    /**
+     * @param string $otp
+     *
+     * @return string
+     */
+    public function format($otp) {
+        if($this->getDigits() < 10) {
+            $otp %= pow(10, $this->getDigits());
+        }
+        return str_pad($otp, $this->getDigits(), '0', STR_PAD_LEFT);
     }
 
     /**
@@ -101,6 +169,7 @@ abstract class Otp {
 
     /**
      * @param int $digits
+     *
      * @return $this
      */
     public function setDigits($digits) {
@@ -109,60 +178,23 @@ abstract class Otp {
     }
 
     /**
-     * @param string $algorithm
-     * @return $this
-     */
-    public function setAlgorithm($algorithm) {
-        $this->algorithm = $algorithm;
-        return $this;
-    }
-
-    /**
-     * @return string
-     */
-    public function getAlgorithm() {
-        return $this->algorithm;
-    }
-
-    /**
-     * @return string
-     */
-    public function generate() {
-        $hash = hash_hmac(
-            $this->getAlgorithm(),
-            $this->getFormattedCounter(),
-            $this->getSecret(),
-            true
-        );
-        $otp = $this->truncateHash($hash);
-        return $this->format($otp);
-    }
-
-    /**
-     * @param string $otp
-     * @return bool
-     */
-    public function validate($otp) {
-        return $this->generate() == $otp;
-    }
-
-    /**
-     * @param string $hash
-     * @return int
-     */
-    public function truncateHash($hash) {
-        $offset = ord(substr($hash, -1)) & 0x0F;
-        $part = substr($hash, $offset, 4);
-        $values = unpack('N', $part);
-        $value = array_shift($values);
-        // Only 32 bits
-        return $value & 0x7FFFFFFF;
-    }
-
-    /**
      * @return string
      */
     abstract public function getCounter();
+
+    /**
+     * @return string
+     */
+    public function getUrl() {
+        $options = $this->getOptions();
+        $options['secret'] = Base32::encode($this->getSecret());
+        return sprintf(
+            'otpauth://%s/%s?%s',
+            $this->getType(),
+            $this->getLabel(),
+            http_build_query($options)
+        );
+    }
 
     /**
      * @return array
@@ -170,25 +202,20 @@ abstract class Otp {
     abstract public function getOptions();
 
     /**
-     * @param string $otp
      * @return string
      */
-    public function format($otp) {
-        if($this->getDigits() < 10) {
-            $otp %= pow(10, $this->getDigits());
-        }
-        return str_pad($otp, $this->getDigits(), '0', STR_PAD_LEFT);
+    public function getLabel() {
+        return $this->label;
     }
 
     /**
-     * @param string $secret
-     * @param array $options
-     * @return string
+     * @param string $label
+     *
+     * @return $this
      */
-    public function getUrl() {
-        $options = $this->getOptions();
-        $options['secret'] = Base32::encode($this->getSecret());
-        return sprintf('otpauth://%s/%s?%s', $this->getType(), $this->getLabel(), http_build_query($options));
+    public function setLabel($label) {
+        $this->label = $label;
+        return $this;
     }
 
 }
