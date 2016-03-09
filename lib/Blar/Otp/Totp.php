@@ -8,7 +8,6 @@ namespace Blar\Otp;
 
 use DateTimeInterface;
 use DateTime;
-use DateInterval;
 
 /**
  * Class Totp

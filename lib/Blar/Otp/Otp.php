@@ -7,7 +7,6 @@
 namespace Blar\Otp;
 
 use Base32\Base32;
-use Blar\Hash\HmacHash;
 use Blar\Hash\HmacHashGenerator;
 
 /**
