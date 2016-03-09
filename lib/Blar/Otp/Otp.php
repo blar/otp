@@ -43,20 +43,24 @@ abstract class Otp {
     private $algorithm = 'SHA1';
 
     /**
+     * @return bool
+     */
+    public function hasIssuer(): bool {
+        return !is_null($this->issuer);
+    }
+
+    /**
      * @return string
      */
-    public function getIssuer() {
+    public function getIssuer(): string {
         return $this->issuer;
     }
 
     /**
      * @param string $issuer
-     *
-     * @return $this
      */
-    public function setIssuer($issuer) {
+    public function setIssuer(string $issuer) {
         $this->issuer = $issuer;
-        return $this;
     }
 
     /**
@@ -64,14 +68,14 @@ abstract class Otp {
      *
      * @return bool
      */
-    public function validate($otp) {
+    public function validate(string $otp): bool {
         return $this->generate() == $otp;
     }
 
     /**
      * @return string
      */
-    public function generate() {
+    public function generate(): string {
         $hash = $this->generateHash($this->getFormattedCounter());
         $otp = $this->truncateHash($hash);
         return $this->format($otp);
@@ -82,33 +86,31 @@ abstract class Otp {
      *
      * @return string
      */
-    protected function generateHash($counter) {
+    protected function generateHash(string $counter): string {
         $generator = new HmacHashGenerator($this->getAlgorithm(), $this->getSecret());
         $hash = $generator->hash($counter);
-        return $hash->getValue();
+        $value = $hash->getValue();
+        return $value;
     }
 
     /**
      * @return string
      */
-    public function getAlgorithm() {
+    public function getAlgorithm(): string {
         return $this->algorithm;
     }
 
     /**
      * @param string $algorithm
-     *
-     * @return $this
      */
-    public function setAlgorithm($algorithm) {
+    public function setAlgorithm(string $algorithm) {
         $this->algorithm = $algorithm;
-        return $this;
     }
 
     /**
      * @return string
      */
-    public function getSecret() {
+    public function getSecret(): string {
         if(is_null($this->secret)) {
             $this->secret = static::createSecret();
         }
@@ -117,21 +119,16 @@ abstract class Otp {
 
     /**
      * @param string $secret
-     *
-     * @return $this
      */
-    public function setSecret($secret) {
+    public function setSecret(string $secret) {
         $this->secret = $secret;
-        return $this;
     }
 
     /**
-     * @param string $prefix
-     *
      * @return string
      */
-    public static function createSecret($prefix = NULL) {
-        return sha1(uniqid($prefix, TRUE), TRUE);
+    protected static function createSecret() {
+        return bin2hex(random_bytes(8));
     }
 
     /**
@@ -153,7 +150,7 @@ abstract class Otp {
      *
      * @return string
      */
-    public function format($otp) {
+    protected function format(string $otp): string {
         if($this->getDigits() < 10) {
             $otp %= pow(10, $this->getDigits());
         }
@@ -163,35 +160,32 @@ abstract class Otp {
     /**
      * @return int
      */
-    public function getDigits() {
+    public function getDigits(): int {
         return $this->digits;
     }
 
     /**
      * @param int $digits
-     *
-     * @return $this
      */
-    public function setDigits($digits) {
+    public function setDigits(int $digits) {
         $this->digits = $digits;
-        return $this;
     }
 
     /**
-     * @return string
+     * @return int
      */
-    abstract public function getCounter();
+    abstract public function getCounter(): int;
 
     /**
      * @return string
      */
-    public function getUrl() {
+    public function getUrl(): string {
         $options = $this->getOptions();
-        $options['secret'] = Base32::encode($this->getSecret());
+        $options['secret'] = trim(Base32::encode($this->getSecret()), '=');
         return sprintf(
             'otpauth://%s/%s?%s',
             $this->getType(),
-            $this->getLabel(),
+            $this->hasLabel() ? $this->getLabel() : '',
             http_build_query($options)
         );
     }
@@ -199,23 +193,27 @@ abstract class Otp {
     /**
      * @return array
      */
-    abstract public function getOptions();
+    abstract public function getOptions(): array;
+
+    /**
+     * @return bool
+     */
+    public function hasLabel(): bool {
+        return !is_null($this->label);
+    }
 
     /**
      * @return string
      */
-    public function getLabel() {
+    public function getLabel(): string {
         return $this->label;
     }
 
     /**
      * @param string $label
-     *
-     * @return $this
      */
-    public function setLabel($label) {
+    public function setLabel(string $label) {
         $this->label = $label;
-        return $this;
     }
 
 }

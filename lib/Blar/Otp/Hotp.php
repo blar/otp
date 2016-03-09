@@ -21,42 +21,43 @@ class Hotp extends Otp {
     /**
      * @return int
      */
-    public function getCounter() {
+    public function getCounter(): int {
         return $this->counter;
     }
 
     /**
      * @param int $counter
-     * @return $this
      */
-    public function setCounter($counter) {
+    public function setCounter(int $counter) {
         $this->counter = $counter;
-        return $this;
     }
 
     /**
      * @return string
      */
-    public function getFormattedCounter() {
+    public function getFormattedCounter(): string {
         return pack('@4N*', $this->getCounter());
     }
 
     /**
      * @return array
      */
-    public function getOptions() {
-        return [
-            'issuer' => $this->getIssuer(),
+    public function getOptions(): array {
+        $options = [
             'algorithm' => $this->getAlgorithm(),
             'digits' => $this->getDigits(),
             'counter' => $this->getFormattedCounter()
         ];
+        if($this->hasIssuer()) {
+            $options['issuer'] = $this->getIssuer();
+        }
+        return $options;
     }
 
     /**
      * @return string
      */
-    public function getType() {
+    public function getType(): string {
         return 'hotp';
     }
 

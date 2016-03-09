@@ -23,14 +23,14 @@ class Totp extends Hotp {
     private $dateTime;
 
     /**
-     * @var DateInterval
+     * @var int
      */
     private $interval = 30;
 
     /**
      * @return DateTimeInterface
      */
-    public function getDateTime() {
+    public function getDateTime(): DateTimeInterface {
         if(is_null($this->dateTime)) {
             return new DateTime();
         }
@@ -39,11 +39,9 @@ class Totp extends Hotp {
 
     /**
      * @param DateTimeInterface $dateTime
-     * @return $this
      */
     public function setDateTime(DateTimeInterface $dateTime) {
         $this->dateTime = $dateTime;
-        return $this;
     }
 
     /**
@@ -55,17 +53,15 @@ class Totp extends Hotp {
 
     /**
      * @param int $interval
-     * @return $this
      */
-    public function setInterval($interval) {
+    public function setInterval(int $interval) {
         $this->interval = $interval;
-        return $this;
     }
 
     /**
-     * @return string
+     * @return int
      */
-    public function getCounter() {
+    public function getCounter(): int {
         return floor($this->getDateTime()->getTimestamp() / $this->getInterval());
     }
 
@@ -73,27 +69,29 @@ class Totp extends Hotp {
      * @param string $otp
      * @return bool
      */
-    public function validate($otp) {
-        $result = parent::validate($otp);
-        return $result;
+    public function validate(string $otp): bool {
+        return parent::validate($otp);
     }
 
     /**
      * @return array
      */
-    public function getOptions() {
-        return [
-            'issuer' => $this->getIssuer(),
+    public function getOptions(): array {
+        $options = [
             'algorithm' => $this->getAlgorithm(),
             'digits' => $this->getDigits(),
             'period' => $this->getInterval(),
         ];
+        if($this->hasIssuer()) {
+            $options['issuer'] = $this->getIssuer();
+        }
+        return $options;
     }
 
     /**
      * @return string
      */
-    public function getType() {
+    public function getType(): string {
         return 'totp';
     }
 
